@@ -1,4 +1,11 @@
+[//]: # (Badges)
+[![GitHub Actions Build Status](https://github.com/MolSSI/mmic_autodock/workflows/CI/badge.svg)](https://github.com/MolSSI/mmic_autodock/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/MolSSI/mmic_autodock/branch/master/graph/badge.svg)](https://codecov.io/gh/MolSSI/mmic_autodock/branch/master)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MolSSI/mmic_autodock.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MolSSI/mmic_mda/context:python)
+
 # AutoDock Vina Component
+This is part of the [MolSSI](http://molssi.org) Molecular Mechanics Interoperable Components ([MMIC](https://github.com/MolSSI/mmic)) project. This package provides molecular docking compute via [AutoDock Vina](http://vina.scripps.edu) program.
+
 ## Preparing Input
 
 ```python
@@ -14,11 +21,10 @@ from mmelemental.models.app.docking import DockInput
 
 # Construct docking input data from MMSchema molecules
 dock_input = DockInput(
-	ligand=ligand_data, 
-	receptor=receptor_data,
-	searchSpace=(xmin, xmax, ymin, ymax, zmin, zmax)
+    ligand=ligand_data,
+    receptor=receptor_data,
+    searchSpace=(xmin, xmax, ymin, ymax, zmin, zmax),
 )
-
 ```
 
 ## Running Docking with AutoDock Vina component
