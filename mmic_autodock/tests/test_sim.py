@@ -26,7 +26,7 @@ print("Ligand pose: ")
 print("========")
 print(ligands)
 
-if not flex:
+if flex:
     print("Flexible receptor pose: ")
     print("========")
     print(flex)
