@@ -5,13 +5,6 @@ from pydantic import Field, validator
 
 __all__ = ["AutoDockComputeInput"]
 
-class AutoDockInput(DockInput):
-    @validator("mol")
-    def valid_mol(cls, v):
-        assert(v.get("ligand"))
-        assert(v.get("receptor"))
-        assert(len(v) == 2)
-        return v
 
 class AutoDockComputeInput(Base):
     dockInput: DockInput = Field(..., description="Docking input model.")
