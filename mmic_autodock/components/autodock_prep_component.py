@@ -35,11 +35,14 @@ class AutoDockPrepComponent(GenericComponent):
     def build_input(
         self, inputs: DockInput, template: Optional[str] = None
     ) -> Dict[str, Any]:
-        ligand_pdbqt = self.ligand_prep(smiles=inputs.mol["ligand"].identifiers.smiles)
-        receptor_pdbqt = self.receptor_prep(receptor=inputs.mol["receptor"])
+        ligand_pdbqt = self.ligand_prep(smiles=inputs.ligand.identifiers.smiles)
+        receptor_pdbqt = self.receptor_prep(receptor=inputs.receptor)
         inputDict = self.checkComputeParams(inputs)
         inputDict["ligand"] = ligand_pdbqt
         inputDict["receptor"] = receptor_pdbqt
+
+        if inputs.bond_const is not None:
+            print(inputs.bond_const)
 
         return inputDict
 
@@ -79,7 +82,7 @@ class AutoDockPrepComponent(GenericComponent):
         return obabel_output.stdout
 
     def checkComputeParams(self, input_model: DockInput) -> Dict[str, Any]:
-        receptor = input_model.mol["receptor"]
+        receptor = input_model.receptor
         outputDict = {}
         inputDict = input_model.dict()
 
