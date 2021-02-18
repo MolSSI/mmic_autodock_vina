@@ -52,16 +52,17 @@ jobs:
       # conda setup requires this special shell
       shell: bash -l {0}
       run: |
+        git clone https://github.com/parmed/parmed
+        cd parmed && pip install . && cd .. && rm -rf parmed
         git clone https://github.com/MolSSI/mmic
         cd mmic && pip install . && cd .. && rm -rf mmic
         git clone https://github.com/MolSSI/MMElemental
         cd MMElemental && pip install . && cd .. && rm -rf MMElemental
         git clone https://github.com/MolSSI/mmic_parmed
         cd mmic_parmed && pip install . && cd .. && rm -rf mmic_parmed
-
+        
         python -m pip install . --no-deps
         conda list
-
 
     - name: Run tests
 
