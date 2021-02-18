@@ -77,7 +77,7 @@ class AutoDockPostComponent(CmdComponent):
         return DockOutput(
             dockInput=input_model.dockInput,
             ligands=ligands,
-            flexible=flex,
+            receptors=flex, # should we reconstruct the whole receptor?
             scores=scores,
         )
 
