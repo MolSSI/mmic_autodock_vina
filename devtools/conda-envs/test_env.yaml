@@ -1,11 +1,16 @@
-name: test
+name: autodock
 channels:
 
   - defaults
+  - conda-forge
+  - bioconda
+
 dependencies:
     # Base depends
   - python
   - pip
+  - autodock-vina
+  - openbabel
 
     # Testing
   - pytest
@@ -14,4 +19,10 @@ dependencies:
   # Pip-only installs
   - pip:
     - codecov
-
+    - qcelemental
+    - qcengine
+    - pydantic
+    # mmelemental
+    # mmic
+    # mmic_translator
+    # obabel
