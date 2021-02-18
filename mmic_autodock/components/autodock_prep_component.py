@@ -41,9 +41,6 @@ class AutoDockPrepComponent(GenericComponent):
         inputDict["ligand"] = ligand_pdbqt
         inputDict["receptor"] = receptor_pdbqt
 
-        if inputs.bond_const is not None:
-            print(inputs.bond_const)
-
         return inputDict
 
     # helper functions
