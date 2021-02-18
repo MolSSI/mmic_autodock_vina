@@ -1,4 +1,4 @@
-name: autodock
+name: test
 channels:
 
   - defaults
