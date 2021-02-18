@@ -5,7 +5,6 @@ from mmelemental.models.util.input import OpenBabelInput, FileInput
 from mmelemental.models.util.output import FileOutput
 from mmelemental.models.molecule import Molecule
 from mmelemental.models.util.output import CmdOutput
-from mmelemental.models.collect import Ensemble
 
 # Import components
 from mmelemental.components.util.openbabel_component import OpenBabelComponent
@@ -70,26 +69,41 @@ class AutoDockPostComponent(CmdComponent):
     ) -> DockOutput:
         """ Parses output from vina_split. """
 
-        ligands = outfiles["outfiles"]["ligand*"]
-        poses = []
-
-        for ligname in ligands:
-            with FileOutput(path=os.path.abspath(ligname), clean=True) as pdbqt:
-                pdbqt.write(ligands[ligname])
-
-                obabel_input = OpenBabelInput(
-                    fileInput=FileInput(path=pdbqt.path), outputExt="pdb"
-                )
-
-                ligand_pdb = OpenBabelComponent.compute(input_data=obabel_input).stdout
-                with FileOutput(path=os.path.abspath("ligand.pdb")) as pdb:
-                    pdb.write(ligand_pdb)
-                    poses.append(Molecule.from_file(pdb.path))
+        ligands = self.read_files(files=outfiles["outfiles"]["ligand*"])
+        flex = self.read_files(files=outfiles["outfiles"]["flex*"])
 
         cmdout = input_model.cmdout
         scores = self.get_scores(cmdout)
-        coll =  Ensemble(mol={"poses": poses}, scores=scores)
-        return DockOutput(dockInput=input_model.dockInput, coll)
+        return DockOutput(
+            dockInput=input_model.dockInput,
+            ligands=ligands,
+            flexible=flex,
+            scores=scores,
+        )
+
+    def read_files(self, files: List[str]) -> List[Molecule]:
+
+        mols = []
+
+        if files is not None:
+            for fname in files:
+                with FileOutput(path=os.path.abspath(fname), clean=True) as pdbqt:
+                    pdbqt.write(files[fname])
+
+                    obabel_input = OpenBabelInput(
+                        fileInput=FileInput(path=pdbqt.path), outputExt="pdb"
+                    )
+
+                    ligand_pdb = OpenBabelComponent.compute(
+                        input_data=obabel_input
+                    ).stdout
+                    with FileOutput(
+                        path=os.path.abspath("ligand.pdb"), clean=True
+                    ) as pdb:
+                        pdb.write(ligand_pdb)
+                        mols.append(Molecule.from_file(pdb.path))
+
+        return mols
 
     def get_scores(self, cmdout: CmdOutput) -> List[float]:
         """
