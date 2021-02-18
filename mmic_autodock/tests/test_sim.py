@@ -16,7 +16,7 @@ from mmic_autodock.components.autodock_component import AutoDockComponent
 dockOutput = AutoDockComponent.compute(dockInput)
 
 # Extract output
-scores, ligands, flex = dockOutput.scores, dockOutput.ligands, dockOutput.flexible
+scores, ligands, flex = dockOutput.scores, dockOutput.ligands, dockOutput.receptors
 
 print("Scores: ")
 print("========")
