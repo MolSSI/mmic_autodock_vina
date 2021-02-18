@@ -3,6 +3,10 @@
 [![codecov](https://codecov.io/gh/MolSSI/mmic_autodock/branch/master/graph/badge.svg)](https://codecov.io/gh/MolSSI/mmic_autodock/branch/master)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MolSSI/mmic_autodock.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MolSSI/mmic_mda/context:python)
 
+<p align="center">
+<img src="mmic_autodock/data/imgs/autodock.png">
+</p>
+
 # AutoDock Vina Component
 This is part of the [MolSSI](http://molssi.org) Molecular Mechanics Interoperable Components ([MMIC](https://github.com/MolSSI/mmic)) project. This package provides molecular docking compute via [AutoDock Vina](http://vina.scripps.edu) program.
 
@@ -28,10 +32,6 @@ dock_input = DockInput(
 ```
 
 ## Running Docking with AutoDock Vina component
-
-<p align="center">
-<img src="mmic_autodock/data/imgs/autodock.png">
-</p>
 
 ```python
 # Import docking simulation component for autodock vina
