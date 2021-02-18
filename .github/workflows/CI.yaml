@@ -52,7 +52,7 @@ jobs:
         show-channel-urls: true
 
     - name: Install package
-	git clone https://github.com/MolSSI/mmic
+        git clone https://github.com/MolSSI/mmic
         cd mmic && pip install . && cd .. && rm -rf mmic
         git clone https://github.com/MolSSI/MMElemental
         cd mmelemental && pip install . && cd .. && rm -rf MMElemental
