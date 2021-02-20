@@ -1,12 +1,12 @@
 from typing import Optional
-from mmelemental.models.base import Base
+from mmelemental.models.base import ProtoModel
 from mmelemental.models.app.docking import DockInput
 from pydantic import Field, validator
 
 __all__ = ["AutoDockComputeInput"]
 
 
-class AutoDockComputeInput(Base):
+class AutoDockComputeInput(ProtoModel):
     dockInput: DockInput = Field(..., description="Docking input model.")
     ligand: str = Field(..., description="Ligand file string.")
     receptor: str = Field(..., description="Receptor file string.")
