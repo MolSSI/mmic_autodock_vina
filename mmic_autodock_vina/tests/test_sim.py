@@ -7,7 +7,13 @@ ligand = Molecule.from_data(
     "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", dtype="smiles"
 )  # smiles code for ibuprofen
 
-dockInput = DockInput(mol={"ligand": ligand, "receptor": receptor})
+searchSpace = [-37.807, 5.045, -2.001, 30.131, -19.633, 37.987]
+
+dockInput = DockInput(
+    mol={"ligand": ligand, "receptor": receptor},
+    searchSpace=searchSpace,
+    searchSpace_units="angstrom",
+)
 
 # Import simulation component for autodock vina
 from mmic_autodock_vina.components.autodock_component import AutoDockComponent
