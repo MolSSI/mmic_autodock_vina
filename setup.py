@@ -1,5 +1,5 @@
 """
-mmic_autodock
+mmic_autodock_vina
 A short description of the project.
 """
 import sys
@@ -21,7 +21,7 @@ except:
 
 setup(
     # Self-descriptive entries which should always be present
-    name="mmic_autodock",
+    name="mmic_autodock_vina",
     author="Andrew-AbiMansour",
     author_email="andrewabimansour@vt.edu",
     description=short_description[0],

@@ -72,7 +72,7 @@ jobs:
       shell: bash -l {0}
 
       run: |
-        pytest -v --cov=mmic_autodock --cov-report=xml --color=yes mmic_autodock/tests/
+        pytest -v --cov=mmic_autodock_vina --cov-report=xml --color=yes mmic_autodock_vina/tests/
 
     - name: CodeCov
       uses: codecov/codecov-action@v1

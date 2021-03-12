@@ -4,4 +4,4 @@ API Documentation
 .. autosummary::
    :toctree: autosummary
 
-   mmic_autodock.canvas
+   mmic_autodock_vina.canvas

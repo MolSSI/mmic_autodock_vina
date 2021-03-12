@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=mmic_autodock
+set SPHINXPROJ=mmic_autodock_vina
 
 if "%1" == "" goto help
 

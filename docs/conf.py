@@ -18,12 +18,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import mmic_autodock
+import mmic_autodock_vina
 
 
 # -- Project information -----------------------------------------------------
 
-project = "mmic_autodock"
+project = "mmic_autodock_vina"
 copyright = (
     "2021, Andrew-AbiMansour. Project structure based on the "
     "Computational Molecular Science Python Cookiecutter version 1.5"
@@ -120,7 +120,7 @@ html_static_path = ["_static"]
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "mmic_autodockdoc"
+htmlhelp_basename = "mmic_autodock_vinadoc"
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -146,9 +146,9 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "mmic_autodock.tex",
-        "mmic_autodock Documentation",
-        "mmic_autodock",
+        "mmic_autodock_vina.tex",
+        "mmic_autodock_vina Documentation",
+        "mmic_autodock_vina",
         "manual",
     )
 ]
@@ -158,7 +158,9 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "mmic_autodock", "mmic_autodock Documentation", [author], 1)]
+man_pages = [
+    (master_doc, "mmic_autodock_vina", "mmic_autodock_vina Documentation", [author], 1)
+]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -169,10 +171,10 @@ man_pages = [(master_doc, "mmic_autodock", "mmic_autodock Documentation", [autho
 texinfo_documents = [
     (
         master_doc,
-        "mmic_autodock",
-        "mmic_autodock Documentation",
+        "mmic_autodock_vina",
+        "mmic_autodock_vina Documentation",
         author,
-        "mmic_autodock",
+        "mmic_autodock_vina",
         "A short description of the project.",
         "Miscellaneous",
     )
