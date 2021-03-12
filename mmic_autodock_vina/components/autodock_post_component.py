@@ -76,7 +76,10 @@ class AutoDockPostComponent(CmdComponent):
         scores = self.get_scores(cmdout)
         return DockOutput(
             simInput=input_model.dockInput,
-            poses={"ligand": ligands, "receptor": flex},  # should we reconstruct the whole receptor?
+            poses={
+                "ligand": ligands,
+                "receptor": flex,
+            },  # should we reconstruct the whole receptor?
             observables={"score": scores},
             observables_units={"score": "kcal/mol"},
         )

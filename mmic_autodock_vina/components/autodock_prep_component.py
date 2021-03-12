@@ -9,6 +9,7 @@ from mmic_autodock_vina.models.input import AutoDockComputeInput
 from mmelemental.components.util.openbabel_component import OpenBabelComponent
 from mmic.components.blueprints.generic_component import GenericComponent
 
+from mmelemental.util.units import convert
 from typing import Any, Dict, Optional, Tuple
 import os
 import string
@@ -80,7 +81,11 @@ class AutoDockPrepComponent(GenericComponent):
         return obabel_output.stdout
 
     def checkComputeParams(self, input_model: DockInput) -> Dict[str, Any]:
-        geometry = input_model.mol.receptor.geometry
+        geometry = convert(
+            input_model.mol.receptor.geometry,
+            input_model.mol.receptor.geometry_units,
+            "angstrom",
+        )
         outputDict = {}
         searchSpace = input_model.searchSpace
 
@@ -89,7 +94,9 @@ class AutoDockPrepComponent(GenericComponent):
             ymin, ymax = geometry[:, 1].min(), geometry[:, 1].max()
             zmin, zmax = geometry[:, 2].min(), geometry[:, 2].max()
         else:
-            xmin, xmax, ymin, ymax, zmin, zmax = searchSpace
+            xmin, xmax, ymin, ymax, zmin, zmax = convert(
+                searchSpace, input_model.searchSpace_units, "angstrom"
+            )
 
         outputDict["center_x"] = (xmin + xmax) / 2.0
         outputDict["size_x"] = xmax - xmin
