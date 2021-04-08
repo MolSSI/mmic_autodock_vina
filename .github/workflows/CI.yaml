@@ -64,6 +64,8 @@ jobs:
         cd mmic_parmed && pip install . && cd .. && rm -rf mmic_parmed
         git clone https://github.com/MolSSI/mmic_docking
         cd mmic_docking && pip install . && cd .. && rm -rf mmic_docking
+        git clone https://github.com/MolSSI/mmic_util
+        cd mmic_util && pip install . && cd .. && rm -rf mmic_util
  
         python -m pip install . --no-deps
         conda list
