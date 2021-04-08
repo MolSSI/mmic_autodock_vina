@@ -1,15 +1,16 @@
 from typing import Optional
 from mmelemental.models.base import ProtoModel
-from mmic_docking.models.input import DockInput
-from pydantic import Field, validator
+from mmic_docking.models import DockInput
+from pydantic import Field
 
 __all__ = ["AutoDockComputeInput"]
 
 
 class AutoDockComputeInput(ProtoModel):
-    dockInput: DockInput = Field(..., description="Docking input model.")
-    ligand: str = Field(..., description="Ligand file string.")
-    receptor: str = Field(..., description="Receptor file string.")
+    proc_input: DockInput = Field(..., description="Docking input model.")
+    ligand: str = Field(..., description="Ligand file str.")
+    receptor: str = Field(..., description="Receptor file str.")
+    flex: Optional[str] = Field(None, description="Flexible side chains file str.")
     cpu: Optional[int] = Field(
         1,
         description="The number of CPUs to use. The default is to try to "
