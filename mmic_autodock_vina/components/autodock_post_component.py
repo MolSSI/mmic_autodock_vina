@@ -1,20 +1,20 @@
 # Import models
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
 from mmic_docking.models.output import DockOutput
-from mmelemental.models.util.input import OpenBabelInput, FileInput
+from mmelemental.models.util.input import FileInput
 from mmelemental.models.util.output import FileOutput
 from mmelemental.models.molecule import Molecule
-from mmelemental.models.util.output import CmdOutput
 
 # Import components
-from mmelemental.components.util.openbabel_component import OpenBabelComponent
-from mmelemental.components.util.cmd_component import CmdComponent
+from mmic.components.blueprints import SpecificComponent
+from mmic_util.components import CmdComponent
 
-from typing import Any, Dict, List, Optional
+from mmelemental.util.files import random_file
+from typing import Any, Dict, List, Optional, Tuple, Union
 import os
 
 
-class AutoDockPostComponent(CmdComponent):
+class AutoDockPostComponent(SpecificComponent):
     """ Postprocessing autodock component. """
 
     @classmethod
@@ -24,6 +24,23 @@ class AutoDockPostComponent(CmdComponent):
     @classmethod
     def output(cls):
         return DockOutput
+
+    def execute(
+        self,
+        inputs: Dict[str, Any],
+        extra_outfiles: Optional[List[str]] = None,
+        extra_commands: Optional[List[str]] = None,
+        scratch_name: Optional[str] = None,
+        timeout: Optional[int] = None,
+    ) -> Tuple[bool, Dict[str, Any]]:
+
+        execute_input = self.build_input(inputs)
+        execute_output = CmdComponent.compute(execute_input)
+
+        out = True, self.parse_output(execute_output, inputs)
+        if execute_input.get("clean_files"):
+            self.clean(execute_input.get("clean_files"))
+        return out
 
     def build_input(
         self,
@@ -35,13 +52,13 @@ class AutoDockPostComponent(CmdComponent):
 
         system = input_model.system
 
-        fsystem = FileOutput(path=os.path.abspath("system.pdbqt"))
+        fsystem = FileOutput(path=random_file(suffix=".pdbqt"))
         fsystem.write(system)
 
         cmd = [
             "vina_split",
             "--input",
-            fsystem.path,
+            fsystem.abs_path,
             "--ligand",
             "ligand",
             "--flex",
@@ -57,58 +74,78 @@ class AutoDockPostComponent(CmdComponent):
 
         return {
             "command": cmd,
-            "infiles": None,
-            "outfiles": ["ligand*", "flex*"],
+            "infiles": [fsystem.abs_path],
+            "outfiles": ["ligand*", "flex*"]
+            if hasattr(input_model.proc_input, "flex")
+            else ["ligand*"],
             "scratch_directory": scratch_directory,
             "environment": env,
-            "clean_files": fsystem,
         }
 
     def parse_output(
-        self, outfiles: Dict[str, Dict[str, str]], input_model: AutoDockComputeOutput
+        self, outputs: Dict[str, Any], inputs: AutoDockComputeOutput
     ) -> DockOutput:
         """ Parses output from vina_split. """
 
-        ligands = self.read_files(files=outfiles["outfiles"]["ligand*"])
-        flex = self.read_files(files=outfiles["outfiles"]["flex*"])
+        ligands = self.read_files(files=outputs.outfiles["ligand*"])
+        flex = self.read_files(files=outputs.outfiles.get("flex*"))
 
-        cmdout = input_model.cmdout
-        scores = self.get_scores(cmdout)
+        scores = self.get_scores(inputs.stdout)
+
         return DockOutput(
-            simInput=input_model.dockInput,
+            proc_input=inputs.proc_input,
             poses={
                 "ligand": ligands,
                 "receptor": flex,
             },  # should we reconstruct the whole receptor?
-            observables={"score": scores},
-            observables_units={"score": "kcal/mol"},
+            scores=scores,
+            scores_units="kcal/mol",
         )
 
-    def read_files(self, files: List[str]) -> List[Molecule]:
+    def read_files(
+        self, files: List[str], config: Optional["TaskConfig"] = None
+    ) -> List[Molecule]:
+
+        env = os.environ.copy()
+
+        if config:
+            env["MKL_NUM_THREADS"] = str(config.ncores)
+            env["OMP_NUM_THREADS"] = str(config.ncores)
+
+        scratch_directory = config.scratch_directory if config else None
 
         mols = []
 
+        obabel_input_lambda = lambda ifile, ofile: {
+            "command": [
+                "obabel",
+                ifile,
+                "-O" + ofile,
+            ],
+            "infiles": [ifile],
+            "outfiles": [ofile],
+            "scratch_directory": scratch_directory,
+            "environment": env,
+        }
+
         if files is not None:
             for fname in files:
+                ligand_file = random_file(suffix=".pdb")
                 with FileOutput(path=os.path.abspath(fname), clean=True) as pdbqt:
+
                     pdbqt.write(files[fname])
+                    obabel_input = obabel_input_lambda(pdbqt.path, ligand_file)
 
-                    obabel_input = OpenBabelInput(
-                        fileInput=FileInput(path=pdbqt.path), outputExt="pdb"
-                    )
-
-                    ligand_pdb = OpenBabelComponent.compute(
-                        input_data=obabel_input
-                    ).stdout
-                    with FileOutput(
-                        path=os.path.abspath("ligand.pdb"), clean=True
-                    ) as pdb:
+                    ligand_pdb = CmdComponent.compute(input_data=obabel_input).outfiles[
+                        ligand_file
+                    ]
+                    with FileOutput(path=ligand_file, clean=True) as pdb:
                         pdb.write(ligand_pdb)
                         mols.append(Molecule.from_file(pdb.path))
 
         return mols
 
-    def get_scores(self, cmdout: CmdOutput) -> List[float]:
+    def get_scores(self, stdout: str) -> List[float]:
         """
         Extracts scores from autodock vina command-line output.
         .. todo:: Extract and return RMSD values.
@@ -116,7 +153,7 @@ class AutoDockPostComponent(CmdComponent):
         read_scores = False
         scores = []
 
-        for line in cmdout.stdout.split("\n"):
+        for line in stdout.split("\n"):
             if line == "-----+------------+----------+----------":
                 read_scores = True
                 continue
@@ -127,3 +164,10 @@ class AutoDockPostComponent(CmdComponent):
                 scores.append(float(score))
 
         return scores
+
+    def clean(self, files: Union[List[FileOutput], FileOutput]):
+        if isinstance(files, list):
+            for file in files:
+                file.remove()
+        else:
+            files.remove()
