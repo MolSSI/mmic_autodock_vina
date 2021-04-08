@@ -10,7 +10,7 @@ ligand = Molecule.from_data(
 searchSpace = [-37.807, 5.045, -2.001, 30.131, -19.633, 37.987]
 
 dockInput = DockInput(
-    mol={"ligand": ligand, "receptor": receptor},
+    molecule={"ligand": ligand, "receptor": receptor},
     searchSpace=searchSpace,
     searchSpace_units="angstrom",
 )
@@ -23,7 +23,7 @@ dockOutput = AutoDockComponent.compute(dockInput)
 
 # Extract output
 scores, ligands, flex = (
-    dockOutput.observables.score,
+    dockOutput.scores,
     dockOutput.poses.ligand,
     dockOutput.poses.receptor,
 )
