@@ -7,6 +7,8 @@ from mmic_autodock_vina.components.autodock_post_component import AutoDockPostCo
 
 from typing import Any, Dict, List, Optional, Tuple
 
+__all__ = ["AutoDockComponent"]
+
 
 class AutoDockComponent(DockComponent):
     def execute(
@@ -18,8 +20,8 @@ class AutoDockComponent(DockComponent):
         timeout: Optional[int] = None,
     ) -> Tuple[bool, Dict[str, Any]]:
 
-        compInput = AutoDockPrepComponent.compute(input_data=inputs)
-        compOutput = AutoDockComputeComponent.compute(input_data=compInput)
-        dockOutput = AutoDockPostComponent.compute(input_data=compOutput)
+        compInput = AutoDockPrepComponent.compute(inputs)
+        compOutput = AutoDockComputeComponent.compute(compInput)
+        dockOutput = AutoDockPostComponent.compute(compOutput)
 
         return True, dockOutput
