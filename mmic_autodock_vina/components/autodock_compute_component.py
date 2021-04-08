@@ -1,13 +1,16 @@
 from typing import Any, Dict, List, Optional, Tuple
+from mmic.components.blueprints import SpecificComponent
 from mmic_autodock_vina.models.input import AutoDockComputeInput
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
-from mmelemental.models.util.output import CmdOutput
 from mmelemental.models.util.input import FileInput
-from mmelemental.components.util.cmd_component import CmdComponent
+
+from mmic_util.models import CmdInput
+from mmic_util.components import CmdComponent
+from mmelemental.util.files import random_file
 import os
 
 
-class AutoDockComputeComponent(CmdComponent):
+class AutoDockComputeComponent(SpecificComponent):
     @classmethod
     def input(cls):
         return AutoDockComputeInput
@@ -23,41 +26,36 @@ class AutoDockComputeComponent(CmdComponent):
         extra_commands: Optional[List[str]] = None,
         scratch_name: Optional[str] = None,
         timeout: Optional[int] = None,
+        config: Optional["TaskConfig"] = None,
     ) -> Tuple[bool, Dict[str, Any]]:
 
         receptor, ligand = inputs.receptor, inputs.ligand
+        receptor_fname = random_file(suffix=".pdbqt")
+        ligand_fname = random_file(suffix=".pdbqt")
 
-        with open("receptor.pdbqt", "w") as fp:
+        with open(receptor_fname, "w") as fp:
             fp.write(receptor)
 
-        with open("ligand.pdbqt", "w") as fp:
+        with open(ligand_fname, "w") as fp:
             fp.write(ligand)
 
         input_model = inputs.dict()
-        del input_model["dockInput"]
+        del input_model["proc_input"]
 
-        input_model["receptor"] = os.path.abspath("receptor.pdbqt")
-        input_model["ligand"] = os.path.abspath("ligand.pdbqt")
+        input_model["receptor"] = receptor_fname
+        input_model["ligand"] = ligand_fname
+        # need to include flex too
+        input_model["out"] = random_file(suffix=".pdbqt")
+        input_model["log"] = random_file(suffix=".log")
 
-        execute_input = self.build_input(input_model)
+        execute_input = self.build_input(input_model, config)
+        execute_output = CmdComponent.compute(execute_input)
+        output = True, self.parse_output(execute_output.dict(), inputs)
+        self.cleanup(input_model)
+        return output
 
-        exe_success, proc = self.run(execute_input)
-
-        if exe_success:
-            output = True, self.parse_output(proc, inputs)
-            self.cleanup()
-            return output
-        else:
-            self.cleanup()
-            raise ValueError(proc["stderr"])
-
-    def cleanup(self):
-        for file in [
-            "receptor.pdbqt",
-            "ligand.pdbqt",
-            "autodock.pdbqt",
-            "autodock.log",
-        ]:
+    def cleanup(self, files):
+        for file in files:
             if os.path.isfile(file):
                 os.remove(file)
 
@@ -88,17 +86,17 @@ class AutoDockComputeComponent(CmdComponent):
 
         return {
             "command": cmd,
-            "infiles": None,
+            "infiles": [input_model["ligand"], input_model["receptor"]],
             "outfiles": [
-                os.path.abspath("autodock.pdbqt"),
-                os.path.abspath("autodock.log"),
+                input_model["out"],
+                input_model["log"],
             ],
             "scratch_directory": scratch_directory,
             "environment": env,
         }
 
     def parse_output(
-        self, output: Dict[str, str], input_model: AutoDockComputeInput
+        self, output: Dict[str, Any], input_model: AutoDockComputeInput
     ) -> AutoDockComputeOutput:
         stdout = output["stdout"]
         stderr = output["stderr"]
@@ -110,10 +108,11 @@ class AutoDockComputeComponent(CmdComponent):
             print(stderr)
 
         system, log = outfiles
-        cmdout = CmdOutput(stdout=stdout, stderr=stderr, log=FileInput(path=log).read())
 
         return AutoDockComputeOutput(
-            cmdout=cmdout,
+            stdout=stdout,
+            stderr=stderr,
+            log=FileInput(path=log).read(),
             system=FileInput(path=system).read(),
-            dockInput=input_model.dockInput,
+            proc_input=input_model.proc_input,
         )
