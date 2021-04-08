@@ -1,22 +1,21 @@
 # Import models
-from mmic_docking.models.input import DockInput
-from mmelemental.models.util.input import OpenBabelInput, FileInput
-from mmelemental.models.util.output import FileOutput
-from mmelemental.models.molecule import Molecule
-from mmic_autodock_vina.models.input import AutoDockComputeInput
+from mmic_docking.models import DockInput
+from mmelemental.models import Molecule
+from mmic_autodock_vina.models import AutoDockComputeInput
 
 # Import components
-from mmelemental.components.util.openbabel_component import OpenBabelComponent
-from mmic.components.blueprints.generic_component import GenericComponent
+from mmic.components.blueprints import SpecificComponent
+from mmic_util.components import CmdComponent
 
 from mmelemental.util.units import convert
+from mmelemental.util.files import random_file
 from typing import Any, Dict, Optional, Tuple
 import os
 import string
-import random
+import tempfile
 
 
-class AutoDockPrepComponent(GenericComponent):
+class AutoDockPrepComponent(SpecificComponent):
     """ Preprocessing component for autodock """
 
     @classmethod
@@ -28,16 +27,20 @@ class AutoDockPrepComponent(GenericComponent):
         return AutoDockComputeInput
 
     def execute(
-        self, inputs: DockInput, config: "TaskConfig" = None
+        self, inputs: DockInput, config: Optional["TaskConfig"] = None
     ) -> Tuple[bool, AutoDockComputeInput]:
-        binput = self.build_input(inputs)
-        return True, AutoDockComputeInput(dockInput=inputs, **binput)
+        binput = self.build_input(inputs, config)
+        return True, AutoDockComputeInput(proc_input=inputs, **binput)
 
     def build_input(
-        self, inputs: DockInput, template: Optional[str] = None
+        self, inputs: DockInput, config: Optional["TaskConfig"] = None
     ) -> Dict[str, Any]:
-        ligand_pdbqt = self.ligand_prep(smiles=inputs.mol.ligand.identifiers.smiles)
-        receptor_pdbqt = self.receptor_prep(receptor=inputs.mol.receptor)
+        ligand_pdbqt = self.ligand_prep(
+            smiles=inputs.molecule.ligand.identifiers.smiles
+        )
+        receptor_pdbqt = self.receptor_prep(
+            receptor=inputs.molecule.receptor, config=config
+        )
         inputDict = self.checkComputeParams(inputs)
         inputDict["ligand"] = ligand_pdbqt
         inputDict["receptor"] = receptor_pdbqt
@@ -45,45 +48,81 @@ class AutoDockPrepComponent(GenericComponent):
         return inputDict
 
     # helper functions
-    def receptor_prep(self, receptor: Molecule) -> str:
-        pdb_name = self.randomString() + ".pdb"
-        fo = FileOutput(path=os.path.abspath(pdb_name))
-        receptor.to_file(fo.path)
+    def receptor_prep(self, receptor: Molecule, config: "TaskConfig" = None) -> str:
+        """ Returns a receptor molecule for rigid docking. """
+        env = os.environ.copy()
+
+        if config:
+            env["MKL_NUM_THREADS"] = str(config.ncores)
+            env["OMP_NUM_THREADS"] = str(config.ncores)
+
+        scratch_directory = config.scratch_directory if config else None
+
+        pdb_file = random_file(suffix=".pdb")
+        receptor.to_file("receptor.json", indent=4)
+        receptor.to_file(pdb_file, mode="w")
 
         # Assume protein is rigid and ass missing hydrogens
-        obabel_input = OpenBabelInput(
-            fileInput=FileInput(path=fo.path), outputExt="pdbqt", args=["-xrh"]
-        )
+        outfile = random_file(suffix=".pdbqt")
+        obabel_input = {
+            "command": [
+                "obabel",
+                pdb_file,
+                "-O" + outfile,
+                "-xrh",
+            ],
+            "infiles": None,
+            "outfiles": [outfile],
+            "scratch_directory": scratch_directory,
+            "environment": env,
+        }
 
-        final_receptor = OpenBabelComponent.compute(input_data=obabel_input).stdout
-        fo.remove()
+        obabel_output = CmdComponent.compute(obabel_input)
+        final_receptor = obabel_output.outfiles[outfile]
+        os.remove(pdb_file)
 
         return final_receptor
 
-    def ligand_prep(self, smiles: str) -> str:
-        return self.smi_to_pdbqt(smiles)
+    def ligand_prep(self, smiles: str, config: Optional["TaskConfig"] = None) -> str:
+        """ Returns a ligand molecule for rigid docking. """
+        env = os.environ.copy()
 
-    def smi_to_pdbqt(self, smiles: str) -> str:
-        smi_file = os.path.abspath(self.randomString() + ".smi")
+        if config:
+            env["MKL_NUM_THREADS"] = str(config.ncores)
+            env["OMP_NUM_THREADS"] = str(config.ncores)
+
+        scratch_directory = config.scratch_directory if config else None
+
+        smi_file = random_file(suffix=".smi")
 
         with open(smi_file, "w") as fp:
             fp.write(smiles)
 
-        obabel_input = OpenBabelInput(
-            fileInput=FileInput(path=smi_file),
-            outputExt="pdbqt",
-            args=["--gen3d", "-h"],
-        )
-        obabel_output = OpenBabelComponent.compute(input_data=obabel_input)
+        outfile = random_file(suffix=".pdbqt")
 
+        obabel_input = {
+            "command": [
+                "obabel",
+                smi_file,
+                "-O" + outfile,
+                "--gen3d",
+                "-h",
+            ],
+            "infiles": None,
+            "outfiles": [outfile],
+            "scratch_directory": scratch_directory,
+            "environment": env,
+        }
+        obabel_output = CmdComponent.compute(obabel_input)
+        final_ligand = obabel_output.outfiles[outfile]
         os.remove(smi_file)
 
-        return obabel_output.stdout
+        return final_ligand
 
     def checkComputeParams(self, input_model: DockInput) -> Dict[str, Any]:
         geometry = convert(
-            input_model.mol.receptor.geometry,
-            input_model.mol.receptor.geometry_units,
+            input_model.molecule.receptor.geometry,
+            input_model.molecule.receptor.geometry_units,
             "angstrom",
         )
         outputDict = {}
@@ -111,8 +150,3 @@ class AutoDockPrepComponent(GenericComponent):
         outputDict["log"] = os.path.abspath("autodock.log")
 
         return outputDict
-
-    @staticmethod
-    def randomString(stringLength=10) -> str:
-        letters = string.ascii_lowercase
-        return "".join(random.choice(letters) for i in range(stringLength))
