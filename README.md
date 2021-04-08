@@ -1,7 +1,7 @@
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/MolSSI/mmic_autodock_vina/workflows/CI/badge.svg)](https://github.com/MolSSI/mmic_autodock_vina/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/master/graph/badge.svg)](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/master)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MolSSI/mmic_autodock_vina.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MolSSI/mmic_mda/context:python)
+[![codecov](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/main/graph/badge.svg)](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/main)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MolSSI/mmic_autodock_vina.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MolSSI/mmic_autodock_vina/context:python)
 
 <p align="center">
 <img src="mmic_autodock_vina/data/imgs/autodock.png">
