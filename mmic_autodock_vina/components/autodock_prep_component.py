@@ -59,7 +59,6 @@ class AutoDockPrepComponent(SpecificComponent):
         scratch_directory = config.scratch_directory if config else None
 
         pdb_file = random_file(suffix=".pdb")
-        receptor.to_file("receptor.json", indent=4)
         receptor.to_file(pdb_file, mode="w")
 
         # Assume protein is rigid and ass missing hydrogens
