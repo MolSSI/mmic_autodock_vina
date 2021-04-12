@@ -54,6 +54,8 @@ jobs:
       run: |
         git clone --single-branch https://github.com/Andrew-AbiMansour/QCEngine --branch execute
         cd QCEngine && python -m pip install . && cd .. && rm -rf QCEngine
+        git clone --single-branch https://github.com/Andrew-AbiMansour/QCElemental --branch serial
+        cd QCElemental && python -m pip install . && cd .. && rm -rf QCElemental
         git clone https://github.com/parmed/parmed
         cd parmed && pip install . && cd .. && rm -rf parmed
         git clone https://github.com/MolSSI/mmic
