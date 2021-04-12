@@ -19,7 +19,6 @@ dependencies:
   # Pip-only installs
   - pip:
     - codecov
-    - qcelemental
     - qcengine
     - pydantic
     # mmelemental
