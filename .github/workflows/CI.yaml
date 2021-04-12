@@ -52,6 +52,8 @@ jobs:
       # conda setup requires this special shell
       shell: bash -l {0}
       run: |
+        git clone --single-branch https://github.com/Andrew-AbiMansour/QCEngine --branch execute
+        cd QCEngine && python -m pip install . && cd .. && rm -rf QCEngine
         git clone https://github.com/parmed/parmed
         cd parmed && pip install . && cd .. && rm -rf parmed
         git clone https://github.com/MolSSI/mmic
