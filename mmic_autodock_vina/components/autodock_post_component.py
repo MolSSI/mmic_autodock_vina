@@ -165,6 +165,6 @@ class AutoDockPostComponent(SpecificComponent):
 
         return scores
 
-    def clean(self, files: list[str]):
+    def clean(self, files: List[str]):
         for file in files:
             os.remove(file)
