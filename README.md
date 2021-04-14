@@ -20,15 +20,12 @@ from mmelemental.models.molecule import Molecule
 receptor_data   = Molecule.from_file(pdb_file)
 ligand_data     = Molecule.from_data(smiles_code)
 
-# Import docking data model compliant with MMSchema
-from mmic_docking.models import DockInput
-
 # Construct docking input data from MMSchema molecules
-dock_input = DockInput(
-    mol={"ligand": ligand_data, "receptor": receptor_data},
-    searchSpace=(xmin, xmax, ymin, ymax, zmin, zmax),
-    searchSpace_units="angstrom",
-)
+dock_input = {
+    "mol": {"ligand": ligand_data, "receptor": receptor_data},
+    "searchSpace": (xmin, xmax, ymin, ymax, zmin, zmax),
+    "searchSpace_units": "angstrom",
+}
 ```
 
 ## Running Docking with AutoDock Vina component
