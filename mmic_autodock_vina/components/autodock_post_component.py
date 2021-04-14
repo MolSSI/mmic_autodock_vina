@@ -38,8 +38,8 @@ class AutoDockPostComponent(SpecificComponent):
         execute_output = CmdComponent.compute(execute_input)
 
         out = True, self.parse_output(execute_output, inputs)
-        if execute_input.get("clean_files"):
-            self.clean(execute_input.get("clean_files"))
+        if execute_input.get("infiles"):
+            self.clean(execute_input.get("infiles"))
         return out
 
     def build_input(
@@ -165,9 +165,6 @@ class AutoDockPostComponent(SpecificComponent):
 
         return scores
 
-    def clean(self, files: Union[List[FileOutput], FileOutput]):
-        if isinstance(files, list):
-            for file in files:
-                file.remove()
-        else:
-            files.remove()
+    def clean(self, files: list[str]):
+        for file in files:
+            os.remove(file)
