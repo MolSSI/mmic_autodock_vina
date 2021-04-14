@@ -14,6 +14,7 @@ def test_mmic_autodock_vina_imported():
     """Sample test, will always pass so long as import statement worked"""
     assert "mmic_autodock_vina" in sys.modules
 
+
 def test_mmic_autodock_vina_run():
     """ Test all the components via a docking compute. """
     # Construct docking input
