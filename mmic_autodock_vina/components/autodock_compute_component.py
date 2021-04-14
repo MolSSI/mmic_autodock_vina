@@ -2,10 +2,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from mmic.components.blueprints import SpecificComponent
 from mmic_autodock_vina.models.input import AutoDockComputeInput
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
-from mmelemental.models.util.input import FileInput
-
-from mmic_util.models import CmdInput
 from mmic_util.components import CmdComponent
+
 from mmelemental.util.files import random_file
 import os
 
@@ -50,8 +48,9 @@ class AutoDockComputeComponent(SpecificComponent):
 
         execute_input = self.build_input(input_model, config)
         execute_output = CmdComponent.compute(execute_input)
-        output = True, self.parse_output(execute_output.dict(), inputs)
-        self.cleanup(input_model)
+        input_model["proc_input"] = inputs.proc_input
+        output = True, self.parse_output(execute_output.dict(), input_model)
+        self.cleanup([input_model["receptor"], input_model["ligand"]])
         return output
 
     def cleanup(self, files):
@@ -93,26 +92,22 @@ class AutoDockComputeComponent(SpecificComponent):
             ],
             "scratch_directory": scratch_directory,
             "environment": env,
+            "raise_err": True,
         }
 
     def parse_output(
-        self, output: Dict[str, Any], input_model: AutoDockComputeInput
+        self, output: Dict[str, Any], inputs: AutoDockComputeInput
     ) -> AutoDockComputeOutput:
         stdout = output["stdout"]
         stderr = output["stderr"]
         outfiles = output["outfiles"]
-
-        if stderr:
-            print("Error from AutoDock Vina:")
-            print("=========================")
-            print(stderr)
-
-        system, log = outfiles
+        system = outfiles[inputs["out"]]
+        log = outfiles[inputs["log"]]
 
         return AutoDockComputeOutput(
             stdout=stdout,
             stderr=stderr,
-            log=FileInput(path=log).read(),
-            system=FileInput(path=system).read(),
-            proc_input=input_model.proc_input,
+            log=log,
+            system=system,
+            proc_input=inputs["proc_input"],
         )
