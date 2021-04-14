@@ -41,7 +41,7 @@ class AutoDockPrepComponent(SpecificComponent):
         receptor_pdbqt = self.receptor_prep(
             receptor=inputs.molecule.receptor, config=config
         )
-        inputDict = self.checkComputeParams(inputs)
+        inputDict = self.check_computeparams(inputs)
         inputDict["ligand"] = ligand_pdbqt
         inputDict["receptor"] = receptor_pdbqt
 
@@ -70,7 +70,7 @@ class AutoDockPrepComponent(SpecificComponent):
                 "-O" + outfile,
                 "-xrh",
             ],
-            "infiles": None,
+            "infiles": [pdb_file],
             "outfiles": [outfile],
             "scratch_directory": scratch_directory,
             "environment": env,
@@ -107,7 +107,7 @@ class AutoDockPrepComponent(SpecificComponent):
                 "--gen3d",
                 "-h",
             ],
-            "infiles": None,
+            "infiles": [smi_file],
             "outfiles": [outfile],
             "scratch_directory": scratch_directory,
             "environment": env,
@@ -118,7 +118,7 @@ class AutoDockPrepComponent(SpecificComponent):
 
         return final_ligand
 
-    def checkComputeParams(self, input_model: DockInput) -> Dict[str, Any]:
+    def check_computeparams(self, input_model: DockInput) -> Dict[str, Any]:
         geometry = convert(
             input_model.molecule.receptor.geometry,
             input_model.molecule.receptor.geometry_units,
