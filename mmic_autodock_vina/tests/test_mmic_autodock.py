@@ -23,12 +23,12 @@ def test_mmic_autodock_vina_run():
         "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", dtype="smiles"
     )  # smiles code for ibuprofen
 
-    searchSpace = [-37.807, 5.045, -2.001, 30.131, -19.633, 37.987]
+    searchSpace = (-37.807, 5.045, -2.001, 30.131, -19.633, 37.987)
 
     dockInput = DockInput(
-        molecule={"ligand": ligand, "receptor": receptor},
-        searchSpace=searchSpace,
-        searchSpace_units="angstrom",
+	        molecule={"ligand": ligand, "receptor": receptor},
+        search_space=searchSpace,
+        search_space_units="angstrom",
     )
 
     # Import simulation component for autodock vina

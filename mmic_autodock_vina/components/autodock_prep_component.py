@@ -125,7 +125,7 @@ class AutoDockPrepComponent(SpecificComponent):
             "angstrom",
         )
         outputDict = {}
-        searchSpace = input_model.searchSpace
+        searchSpace = input_model.search_space
 
         if not searchSpace:
             xmin, xmax = geometry[:, 0].min(), geometry[:, 0].max()
@@ -133,7 +133,7 @@ class AutoDockPrepComponent(SpecificComponent):
             zmin, zmax = geometry[:, 2].min(), geometry[:, 2].max()
         else:
             xmin, xmax, ymin, ymax, zmin, zmax = convert(
-                searchSpace, input_model.searchSpace_units, "angstrom"
+                searchSpace, input_model.search_space_units, "angstrom"
             )
 
         outputDict["center_x"] = (xmin + xmax) / 2.0
