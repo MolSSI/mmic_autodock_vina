@@ -3,6 +3,10 @@
 [![codecov](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/main/graph/badge.svg)](https://codecov.io/gh/MolSSI/mmic_autodock_vina/branch/main)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MolSSI/mmic_autodock_vina.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MolSSI/mmic_autodock_vina/context:python)
 
+This is part of the [MolSSI](http://molssi.org) Molecular Mechanics Interoperable Components ([MMIC](https://github.com/MolSSI/mmic)) project. This package provides a 
+provides an engine component for running molecular docking with [AutoDock Vina](http://vina.scripps.edu).
+
+
 <p align="center">
 <img src="mmic_autodock_vina/data/imgs/autodock.png">
 </p>
@@ -17,14 +21,14 @@ This is part of the [MolSSI](http://molssi.org) Molecular Mechanics Interoperabl
 from mmelemental.models.molecule import Molecule
 
 # Construct MM molecules
-receptor_data   = Molecule.from_file(pdb_file)
-ligand_data     = Molecule.from_data(smiles_code)
+receptor = Molecule.from_file(pdb_file)
+ligand   = Molecule.from_data(smiles_code, dtype="smiles")
 
 # Construct docking input data from MMSchema molecules
 dock_input = {
-    "mol": {"ligand": ligand_data, "receptor": receptor_data},
-    "searchSpace": (xmin, xmax, ymin, ymax, zmin, zmax),
-    "searchSpace_units": "angstrom",
+    "mol": {"ligand": ligand, "receptor": receptor},
+    "search_space": (xmin, xmax, ymin, ymax, zmin, zmax),
+    "search_space_units": "angstrom",
 }
 ```
 
@@ -38,7 +42,7 @@ from mmic_autodock_vina.components.autodock_component import AutoDockComponent
 dock_output = AutoDockComponent.compute(dock_input)
 
 # Extract output
-affinity, ligands = dock_output.observables.score, dock_output.poses.ligand
+scores, ligands = dock_output.observables.scores, dock_output.poses.ligand
 ```
 
 ### Copyright
