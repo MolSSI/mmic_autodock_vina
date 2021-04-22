@@ -1,20 +1,19 @@
 # Import models
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
 from mmic_docking.models.output import DockOutput
-from mmelemental.models.util.input import FileInput
-from mmelemental.models.util.output import FileOutput
+from mmelemental.models.util import FileInput, FileOutput
 from mmelemental.models.molecule import Molecule
 
 # Import components
-from mmic.components.blueprints import SpecificComponent
-from mmic_util.components import CmdComponent
+from mmic.components.blueprints import GenericComponent
+from mmic_cmd.components import CmdComponent
 
 from mmelemental.util.files import random_file
 from typing import Any, Dict, List, Optional, Tuple, Union
 import os
 
 
-class AutoDockPostComponent(SpecificComponent):
+class AutoDockPostComponent(GenericComponent):
     """ Postprocessing autodock component. """
 
     @classmethod
