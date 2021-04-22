@@ -5,7 +5,8 @@ Unit and regression test for the mmic_autodock_vina package.
 # Import package, test suite, and other packages as needed
 import mmic_autodock_vina
 from mmelemental.models.molecule import Molecule
-from mmic_docking.models.input import DockInput
+from mmic_docking.models import DockInput
+from mm_data import mols
 import pytest
 import sys
 
@@ -15,18 +16,25 @@ def test_mmic_autodock_vina_imported():
     assert "mmic_autodock_vina" in sys.modules
 
 
-def test_mmic_autodock_vina_run():
+# smiles code for ibuprofen
+@pytest.mark.parametrize(
+    "ligand,dtype",
+    [("CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", "smiles"), (mols["ibu.pdb"], None)],
+)
+def test_mmic_autodock_vina_run(ligand, dtype):
     """ Test all the components via a docking compute. """
     # Construct docking input
-    receptor = Molecule.from_file("mmic_autodock_vina/data/PHIPA_C2/PHIPA_C2_apo.pdb")
-    ligand = Molecule.from_data(
-        "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", dtype="smiles"
-    )  # smiles code for ibuprofen
+    receptor = Molecule.from_file(mols["PHIPA_C2_apo.pdb"])
+
+    if dtype:
+        ligand = Molecule.from_data(ligand, dtype)
+    else:
+        ligand = Molecule.from_file(ligand)
 
     searchSpace = (-37.807, 5.045, -2.001, 30.131, -19.633, 37.987)
 
     dockInput = DockInput(
-	        molecule={"ligand": ligand, "receptor": receptor},
+        molecule={"ligand": ligand, "receptor": receptor},
         search_space=searchSpace,
         search_space_units="angstrom",
     )
