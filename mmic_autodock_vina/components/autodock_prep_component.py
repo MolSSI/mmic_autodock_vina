@@ -4,18 +4,18 @@ from mmelemental.models import Molecule
 from mmic_autodock_vina.models import AutoDockComputeInput
 
 # Import components
-from mmic.components.blueprints import SpecificComponent
-from mmic_util.components import CmdComponent
+from mmic.components.blueprints import GenericComponent
+from mmic_cmd.components import CmdComponent
 
 from mmelemental.util.units import convert
 from mmelemental.util.files import random_file
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 import os
 import string
 import tempfile
 
 
-class AutoDockPrepComponent(SpecificComponent):
+class AutoDockPrepComponent(GenericComponent):
     """ Preprocessing component for autodock """
 
     @classmethod
@@ -29,17 +29,30 @@ class AutoDockPrepComponent(SpecificComponent):
     def execute(
         self, inputs: DockInput, config: Optional["TaskConfig"] = None
     ) -> Tuple[bool, AutoDockComputeInput]:
+
+        if isinstance(inputs, dict):
+            inputs = self.input()(**inputs)
+
         binput = self.build_input(inputs, config)
         return True, AutoDockComputeInput(proc_input=inputs, **binput)
 
     def build_input(
         self, inputs: DockInput, config: Optional["TaskConfig"] = None
     ) -> Dict[str, Any]:
-        ligand_pdbqt = self.ligand_prep(
-            smiles=inputs.molecule.ligand.identifiers.smiles
-        )
-        receptor_pdbqt = self.receptor_prep(
-            receptor=inputs.molecule.receptor, config=config
+
+        if inputs.molecule.ligand.identifiers is None:
+            ligand_pdbqt = self.pdbqt_prep(
+                inputs.molecule.ligand, config=config, args=["-h"]
+            )
+        else:
+            ligand_pdbqt = self.smiles_prep(
+                smiles=inputs.molecule.ligand.identifiers.smiles
+            )
+
+        receptor_pdbqt = self.pdbqt_prep(
+            receptor=inputs.molecule.receptor,
+            config=config,
+            args=["-xrh"],
         )
         inputDict = self.check_computeparams(inputs)
         inputDict["ligand"] = ligand_pdbqt
@@ -48,8 +61,13 @@ class AutoDockPrepComponent(SpecificComponent):
         return inputDict
 
     # helper functions
-    def receptor_prep(self, receptor: Molecule, config: "TaskConfig" = None) -> str:
-        """ Returns a receptor molecule for rigid docking. """
+    def pdbqt_prep(
+        self,
+        receptor: Molecule,
+        config: "TaskConfig" = None,
+        args: Optional[List[str]] = None,
+    ) -> str:
+        """ Returns a pdbqt molecule for rigid docking. """
         env = os.environ.copy()
 
         if config:
@@ -63,13 +81,13 @@ class AutoDockPrepComponent(SpecificComponent):
 
         # Assume protein is rigid and ass missing hydrogens
         outfile = random_file(suffix=".pdbqt")
+        command = ["obabel", pdb_file, "-O" + outfile]
+
+        if args:
+            command.extend(args)
+
         obabel_input = {
-            "command": [
-                "obabel",
-                pdb_file,
-                "-O" + outfile,
-                "-xrh",
-            ],
+            "command": command,
             "infiles": [pdb_file],
             "outfiles": [outfile],
             "scratch_directory": scratch_directory,
@@ -82,8 +100,8 @@ class AutoDockPrepComponent(SpecificComponent):
 
         return final_receptor
 
-    def ligand_prep(self, smiles: str, config: Optional["TaskConfig"] = None) -> str:
-        """ Returns a ligand molecule for rigid docking. """
+    def smiles_prep(self, smiles: str, config: Optional["TaskConfig"] = None) -> str:
+        """ Returns a pdbqt molecule from smiles for rigid docking. """
         env = os.environ.copy()
 
         if config:
