@@ -52,25 +52,6 @@ jobs:
       # conda setup requires this special shell
       shell: bash -l {0}
       run: |
-        git clone --single-branch https://github.com/Andrew-AbiMansour/QCEngine --branch execute
-        cd QCEngine && python -m pip install . && cd .. && rm -rf QCEngine
-        git clone --single-branch https://github.com/Andrew-AbiMansour/QCElemental --branch serial
-        cd QCElemental && python -m pip install . && cd .. && rm -rf QCElemental
-        git clone https://github.com/parmed/parmed
-        cd parmed && pip install . && cd .. && rm -rf parmed
-        git clone https://github.com/MolSSI/mmic
-        cd mmic && pip install . && cd .. && rm -rf mmic
-        git clone https://github.com/MolSSI/mmic_translator
-        cd mmic_translator && pip install . && cd .. && rm -rf mmic_translator
-        git clone https://github.com/MolSSI/MMElemental
-        cd MMElemental && pip install . && cd .. && rm -rf MMElemental
-        git clone https://github.com/MolSSI/mmic_parmed
-        cd mmic_parmed && pip install . && cd .. && rm -rf mmic_parmed
-        git clone https://github.com/MolSSI/mmic_docking
-        cd mmic_docking && pip install . && cd .. && rm -rf mmic_docking
-        git clone https://github.com/MolSSI/mmic_util
-        cd mmic_util && pip install . && cd .. && rm -rf mmic_util
- 
         python -m pip install . --no-deps
         conda list
 
