@@ -1,14 +1,14 @@
 from typing import Any, Dict, List, Optional, Tuple
-from mmic.components.blueprints import SpecificComponent
+from mmic.components.blueprints import GenericComponent
 from mmic_autodock_vina.models.input import AutoDockComputeInput
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
-from mmic_util.components import CmdComponent
+from mmic_cmd.components import CmdComponent
 
 from mmelemental.util.files import random_file
 import os
 
 
-class AutoDockComputeComponent(SpecificComponent):
+class AutoDockComputeComponent(GenericComponent):
     @classmethod
     def input(cls):
         return AutoDockComputeInput
