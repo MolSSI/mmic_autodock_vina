@@ -22,7 +22,7 @@ def test_mmic_autodock_vina_imported():
     [("CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", "smiles"), (mols["ibu.pdb"], None)],
 )
 def test_mmic_autodock_vina_run(ligand, dtype):
-    """ Test all the components via a docking compute. """
+    """Test all the components via a docking compute."""
     # Construct docking input
     receptor = Molecule.from_file(mols["PHIPA_C2_apo.pdb"])
 

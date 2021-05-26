@@ -14,7 +14,7 @@ import os
 
 
 class AutoDockPostComponent(GenericComponent):
-    """ Postprocessing autodock component. """
+    """Postprocessing autodock component."""
 
     @classmethod
     def input(cls):
@@ -47,7 +47,7 @@ class AutoDockPostComponent(GenericComponent):
         config: "TaskConfig" = None,
         template: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """ Builds input files for autodock vina_split. """
+        """Builds input files for autodock vina_split."""
 
         system = input_model.system
 
@@ -84,7 +84,7 @@ class AutoDockPostComponent(GenericComponent):
     def parse_output(
         self, outputs: Dict[str, Any], inputs: AutoDockComputeOutput
     ) -> DockOutput:
-        """ Parses output from vina_split. """
+        """Parses output from vina_split."""
 
         ligands = self.read_files(files=outputs.outfiles["ligand*"])
         flex = self.read_files(files=outputs.outfiles.get("flex*"))

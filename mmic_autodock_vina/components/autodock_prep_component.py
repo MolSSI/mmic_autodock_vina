@@ -16,7 +16,7 @@ import tempfile
 
 
 class AutoDockPrepComponent(GenericComponent):
-    """ Preprocessing component for autodock """
+    """Preprocessing component for autodock"""
 
     @classmethod
     def input(cls):
@@ -67,7 +67,7 @@ class AutoDockPrepComponent(GenericComponent):
         config: "TaskConfig" = None,
         args: Optional[List[str]] = None,
     ) -> str:
-        """ Returns a pdbqt molecule for rigid docking. """
+        """Returns a pdbqt molecule for rigid docking."""
         env = os.environ.copy()
 
         if config:
@@ -101,7 +101,7 @@ class AutoDockPrepComponent(GenericComponent):
         return final_receptor
 
     def smiles_prep(self, smiles: str, config: Optional["TaskConfig"] = None) -> str:
-        """ Returns a pdbqt molecule from smiles for rigid docking. """
+        """Returns a pdbqt molecule from smiles for rigid docking."""
         env = os.environ.copy()
 
         if config:
