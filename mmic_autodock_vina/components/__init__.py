@@ -1,4 +1,4 @@
 from . import autodock_component
 from .autodock_component import *
 
-__all__ = autodock_component.__all__
+RunComponent = autodock_component.AutoDockComponent
