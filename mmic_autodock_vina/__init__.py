@@ -4,8 +4,6 @@ A short description of the project.
 """
 
 # Add imports here
-from .models import *
-from .components import *
 from . import models
 from . import components
 
