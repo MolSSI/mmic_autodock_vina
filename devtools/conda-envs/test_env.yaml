@@ -20,8 +20,8 @@ dependencies:
   - pip:
     - codecov
     - pydantic
+    - qcelemental
     - git+https://github.com/andrew-abimansour/qcengine.git@execute
-    - git+https://github.com/andrew-abimansour/qcelemental.git@serial
     - git+https://github.com/molssi/cmselemental.git@dev
     - git+https://github.com/parmed/parmed.git
     - git+https://github.com/MolSSI/mmic.git
