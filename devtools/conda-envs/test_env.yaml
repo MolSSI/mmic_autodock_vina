@@ -31,3 +31,4 @@ dependencies:
     - git+https://github.com/MolSSI/mmic_docking.git
     - git+https://github.com/MolSSI/mmic_cmd.git
     - git+https://github.com/MolSSI/mm_data.git
+    - git+https://github.com/andrew-abimansour/nglview.git
