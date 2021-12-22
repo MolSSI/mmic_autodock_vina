@@ -20,12 +20,12 @@ dependencies:
   - pip:
     - codecov
     - pydantic
+    - mmic
+    - cmselemental
+    - mmelemental
     - qcelemental
     - git+https://github.com/andrew-abimansour/qcengine.git@execute
-    - git+https://github.com/molssi/cmselemental.git@dev
     - git+https://github.com/parmed/parmed.git
-    - git+https://github.com/MolSSI/mmic.git
-    - git+https://github.com/MolSSI/mmelemental.git
     - git+https://github.com/MolSSI/mmic_translator.git
     - git+https://github.com/MolSSI/mmic_parmed.git
     - git+https://github.com/MolSSI/mmic_docking.git
