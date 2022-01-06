@@ -42,7 +42,8 @@ from mmic_autodock_vina.components.autodock_component import AutoDockComponent
 dock_output = AutoDockComponent.compute(dock_input)
 
 # Extract output
-scores, ligands = dock_output.observables.scores, dock_output.poses.ligand
+scores, ligands, flex = dock_output.scores, dock_output.poses.ligand, dock_output.poses.receptor
+    
 ```
 
 ### Copyright
