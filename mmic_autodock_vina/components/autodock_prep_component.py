@@ -1,5 +1,5 @@
 # Import models
-from mmic_docking.models import DockInput
+from mmic_docking.models import InputDock
 from mmelemental.models import Molecule
 from mmic_autodock_vina.models import AutoDockComputeInput
 
@@ -8,7 +8,7 @@ from mmic.components.blueprints import GenericComponent
 from mmic_cmd.components import CmdComponent
 
 from mmelemental.util.units import convert
-from mmelemental.util.files import random_file
+from cmselemental.util.decorators import classproperty
 from typing import Any, Dict, Optional, Tuple, List
 import os
 import string
@@ -18,26 +18,30 @@ import tempfile
 class AutoDockPrepComponent(GenericComponent):
     """Preprocessing component for autodock"""
 
-    @classmethod
+    @classproperty
     def input(cls):
-        return DockInput
+        return InputDock
 
-    @classmethod
+    @classproperty
     def output(cls):
         return AutoDockComputeInput
 
+    @classproperty
+    def version(cls):
+        return ""
+
     def execute(
-        self, inputs: DockInput, config: Optional["TaskConfig"] = None
+        self, inputs: InputDock, config: Optional["TaskConfig"] = None
     ) -> Tuple[bool, AutoDockComputeInput]:
 
         if isinstance(inputs, dict):
-            inputs = self.input()(**inputs)
+            inputs = self.input(**inputs)
 
         binput = self.build_input(inputs, config)
         return True, AutoDockComputeInput(proc_input=inputs, **binput)
 
     def build_input(
-        self, inputs: DockInput, config: Optional["TaskConfig"] = None
+        self, inputs: InputDock, config: Optional["TaskConfig"] = None
     ) -> Dict[str, Any]:
 
         if inputs.molecule.ligand.identifiers is None:
@@ -76,11 +80,11 @@ class AutoDockPrepComponent(GenericComponent):
 
         scratch_directory = config.scratch_directory if config else None
 
-        pdb_file = random_file(suffix=".pdb")
+        pdb_file = tempfile.NamedTemporaryFile(suffix=".pdb").name
         receptor.to_file(pdb_file, mode="w")
 
         # Assume protein is rigid and ass missing hydrogens
-        outfile = random_file(suffix=".pdbqt")
+        outfile = tempfile.NamedTemporaryFile(suffix=".pdbqt").name
         command = ["obabel", pdb_file, "-O" + outfile]
 
         if args:
@@ -96,7 +100,6 @@ class AutoDockPrepComponent(GenericComponent):
 
         obabel_output = CmdComponent.compute(obabel_input)
         final_receptor = obabel_output.outfiles[outfile]
-        os.remove(pdb_file)
 
         return final_receptor
 
@@ -110,12 +113,12 @@ class AutoDockPrepComponent(GenericComponent):
 
         scratch_directory = config.scratch_directory if config else None
 
-        smi_file = random_file(suffix=".smi")
+        smi_file = tempfile.NamedTemporaryFile(suffix=".smi").name
 
         with open(smi_file, "w") as fp:
             fp.write(smiles)
 
-        outfile = random_file(suffix=".pdbqt")
+        outfile = tempfile.NamedTemporaryFile(suffix=".pdbqt").name
 
         obabel_input = {
             "command": [
@@ -132,11 +135,10 @@ class AutoDockPrepComponent(GenericComponent):
         }
         obabel_output = CmdComponent.compute(obabel_input)
         final_ligand = obabel_output.outfiles[outfile]
-        os.remove(smi_file)
 
         return final_ligand
 
-    def check_computeparams(self, input_model: DockInput) -> Dict[str, Any]:
+    def check_computeparams(self, input_model: InputDock) -> Dict[str, Any]:
         geometry = convert(
             input_model.molecule.receptor.geometry,
             input_model.molecule.receptor.geometry_units,

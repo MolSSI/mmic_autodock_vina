@@ -3,19 +3,24 @@ from mmic.components.blueprints import GenericComponent
 from mmic_autodock_vina.models.input import AutoDockComputeInput
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
 from mmic_cmd.components import CmdComponent
+from cmselemental.util.decorators import classproperty
+import tempfile
 
-from mmelemental.util.files import random_file
 import os
 
 
 class AutoDockComputeComponent(GenericComponent):
-    @classmethod
+    @classproperty
     def input(cls):
         return AutoDockComputeInput
 
-    @classmethod
+    @classproperty
     def output(cls):
         return AutoDockComputeOutput
+
+    @classproperty
+    def version(cls):
+        return ""
 
     def execute(
         self,
@@ -28,8 +33,8 @@ class AutoDockComputeComponent(GenericComponent):
     ) -> Tuple[bool, Dict[str, Any]]:
 
         receptor, ligand = inputs.receptor, inputs.ligand
-        receptor_fname = random_file(suffix=".pdbqt")
-        ligand_fname = random_file(suffix=".pdbqt")
+        receptor_fname = tempfile.NamedTemporaryFile(suffix=".pdbqt").name
+        ligand_fname = tempfile.NamedTemporaryFile(suffix=".pdbqt").name
 
         with open(receptor_fname, "w") as fp:
             fp.write(receptor)
@@ -43,20 +48,14 @@ class AutoDockComputeComponent(GenericComponent):
         input_model["receptor"] = receptor_fname
         input_model["ligand"] = ligand_fname
         # need to include flex too
-        input_model["out"] = random_file(suffix=".pdbqt")
-        input_model["log"] = random_file(suffix=".log")
+        input_model["out"] = tempfile.NamedTemporaryFile(suffix=".pdbqt").name
+        input_model["log"] = tempfile.NamedTemporaryFile(suffix=".log").name
 
         execute_input = self.build_input(input_model, config)
         execute_output = CmdComponent.compute(execute_input)
         input_model["proc_input"] = inputs.proc_input
         output = True, self.parse_output(execute_output.dict(), input_model)
-        self.cleanup([input_model["receptor"], input_model["ligand"]])
         return output
-
-    def cleanup(self, files):
-        for file in files:
-            if os.path.isfile(file):
-                os.remove(file)
 
     def build_input(
         self,
@@ -105,6 +104,9 @@ class AutoDockComputeComponent(GenericComponent):
         log = outfiles[inputs["log"]]
 
         return AutoDockComputeOutput(
+            schema_name="mmschema",
+            schema_version=1,
+            success=True,
             stdout=stdout,
             stderr=stderr,
             log=log,

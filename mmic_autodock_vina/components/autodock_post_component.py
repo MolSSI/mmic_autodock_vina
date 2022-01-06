@@ -1,28 +1,33 @@
 # Import models
 from mmic_autodock_vina.models.output import AutoDockComputeOutput
-from mmic_docking.models.output import DockOutput
+from mmic_docking.models.output import OutputDock
 from mmelemental.models.util import FileInput, FileOutput
-from mmelemental.models.molecule import Molecule
+from mmelemental.models import Molecule
+from cmselemental.util.decorators import classproperty
 
 # Import components
 from mmic.components.blueprints import GenericComponent
 from mmic_cmd.components import CmdComponent
 
-from mmelemental.util.files import random_file
 from typing import Any, Dict, List, Optional, Tuple, Union
 import os
+import tempfile
 
 
 class AutoDockPostComponent(GenericComponent):
     """Postprocessing autodock component."""
 
-    @classmethod
+    @classproperty
     def input(cls):
         return AutoDockComputeOutput
 
-    @classmethod
+    @classproperty
     def output(cls):
-        return DockOutput
+        return OutputDock
+
+    @classproperty
+    def version(cls):
+        return ""
 
     def execute(
         self,
@@ -37,8 +42,6 @@ class AutoDockPostComponent(GenericComponent):
         execute_output = CmdComponent.compute(execute_input)
 
         out = True, self.parse_output(execute_output, inputs)
-        if execute_input.get("infiles"):
-            self.clean(execute_input.get("infiles"))
         return out
 
     def build_input(
@@ -51,7 +54,7 @@ class AutoDockPostComponent(GenericComponent):
 
         system = input_model.system
 
-        fsystem = FileOutput(path=random_file(suffix=".pdbqt"))
+        fsystem = FileOutput(path=tempfile.NamedTemporaryFile(suffix=".pdbqt").name)
         fsystem.write(system)
 
         cmd = [
@@ -83,7 +86,7 @@ class AutoDockPostComponent(GenericComponent):
 
     def parse_output(
         self, outputs: Dict[str, Any], inputs: AutoDockComputeOutput
-    ) -> DockOutput:
+    ) -> OutputDock:
         """Parses output from vina_split."""
 
         ligands = self.read_files(files=outputs.outfiles["ligand*"])
@@ -91,8 +94,11 @@ class AutoDockPostComponent(GenericComponent):
 
         scores = self.get_scores(inputs.stdout)
 
-        return DockOutput(
+        return OutputDock(
             proc_input=inputs.proc_input,
+            schema_name=inputs.proc_input.schema_name,
+            schema_version=inputs.proc_input.schema_version,
+            success=True,
             poses={
                 "ligand": ligands,
                 "receptor": flex,
@@ -129,16 +135,16 @@ class AutoDockPostComponent(GenericComponent):
 
         if files is not None:
             for fname in files:
-                ligand_file = random_file(suffix=".pdb")
+                ligand_file = tempfile.NamedTemporaryFile(suffix=".pdb")
                 with FileOutput(path=os.path.abspath(fname), clean=True) as pdbqt:
 
                     pdbqt.write(files[fname])
-                    obabel_input = obabel_input_lambda(pdbqt.path, ligand_file)
+                    obabel_input = obabel_input_lambda(pdbqt.path, ligand_file.name)
 
                     ligand_pdb = CmdComponent.compute(input_data=obabel_input).outfiles[
-                        ligand_file
+                        ligand_file.name
                     ]
-                    with FileOutput(path=ligand_file, clean=True) as pdb:
+                    with FileOutput(path=ligand_file.name, clean=False) as pdb:
                         pdb.write(ligand_pdb)
                         mols.append(Molecule.from_file(pdb.path))
 
@@ -163,7 +169,3 @@ class AutoDockPostComponent(GenericComponent):
                 scores.append(float(score))
 
         return scores
-
-    def clean(self, files: List[str]):
-        for file in files:
-            os.remove(file)
