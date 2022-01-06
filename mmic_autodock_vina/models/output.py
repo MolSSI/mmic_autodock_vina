@@ -1,13 +1,13 @@
 from typing import List, Optional
-from mmic_docking.models import DockInput
-from mmelemental.models.proc import ProcOutput
+from mmic_docking.models import InputDock
+from cmselemental.models import OutputProc
 from pydantic import Field
 
 __all__ = ["AutoDockComputeOutput"]
 
 
-class AutoDockComputeOutput(ProcOutput):
-    proc_input: DockInput = Field(..., description="Docking input model.")
+class AutoDockComputeOutput(OutputProc):
+    proc_input: InputDock = Field(..., description="Docking input model.")
     scores: List[float] = Field(
         None,
         description="A metric for evaluating a particular pose. Length of scores must be equal to length of poses.",

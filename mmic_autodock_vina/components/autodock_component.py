@@ -5,6 +5,7 @@ from mmic_autodock_vina.components.autodock_compute_component import (
     AutoDockComputeComponent,
 )
 from mmic_autodock_vina.components.autodock_post_component import AutoDockPostComponent
+from cmselemental.util.decorators import classproperty
 
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -12,20 +13,20 @@ __all__ = ["AutoDockComponent"]
 
 
 class AutoDockComponent(TacticComponent):
-    @classmethod
+    @classproperty
     def input(cls):
-        return DockComponent.input()
+        return DockComponent.input
 
-    @classmethod
+    @classproperty
     def output(cls):
-        return DockComponent.output()
+        return DockComponent.output
 
-    @classmethod
-    def strategy_comp(cls):
+    @classproperty
+    def strategy_comps(cls):
         return DockComponent
 
-    @classmethod
-    def get_version(cls):
+    @classproperty
+    def version(cls):
         return ""
 
     def execute(

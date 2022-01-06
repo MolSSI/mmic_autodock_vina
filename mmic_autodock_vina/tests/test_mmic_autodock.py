@@ -4,8 +4,8 @@ Unit and regression test for the mmic_autodock_vina package.
 
 # Import package, test suite, and other packages as needed
 import mmic_autodock_vina
-from mmelemental.models.molecule import Molecule
-from mmic_docking.models import DockInput
+from mmelemental.models import Molecule
+from mmic_docking.models import InputDock
 from mm_data import mols
 import pytest
 import sys
@@ -33,7 +33,9 @@ def test_mmic_autodock_vina_run(ligand, dtype):
 
     searchSpace = (-37.807, 5.045, -2.001, 30.131, -19.633, 37.987)
 
-    dockInput = DockInput(
+    dockInput = InputDock(
+        schema_name="mmschema",
+        schema_version=1,
         molecule={"ligand": ligand, "receptor": receptor},
         search_space=searchSpace,
         search_space_units="angstrom",

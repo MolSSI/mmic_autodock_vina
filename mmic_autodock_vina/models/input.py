@@ -1,13 +1,13 @@
 from typing import Optional
 from mmelemental.models.base import ProtoModel
-from mmic_docking.models import DockInput
+from mmic_docking.models import InputDock
 from pydantic import Field
 
 __all__ = ["AutoDockComputeInput"]
 
 
 class AutoDockComputeInput(ProtoModel):
-    proc_input: DockInput = Field(..., description="Docking input model.")
+    proc_input: InputDock = Field(..., description="Docking input model.")
     ligand: str = Field(..., description="Ligand file str.")
     receptor: str = Field(..., description="Receptor file str.")
     flex: Optional[str] = Field(None, description="Flexible side chains file str.")
